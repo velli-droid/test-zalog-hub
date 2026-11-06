@@ -1,4 +1,5 @@
-import { Check, CircleCheck, ListTodo, Plus } from 'lucide-react'
+import { useState } from 'react'
+import { Check, ChevronDown, CircleCheck, Music2, Plus } from 'lucide-react'
 
 import { KaraokePlayer } from '@/components/karaoke-player'
 import { TaskList } from '@/components/task-list'
@@ -11,6 +12,7 @@ import { useTasks } from '@/hooks/use-tasks'
 import '@/App.css'
 
 function App() {
+    const [karaokeOpen, setKaraokeOpen] = useState(false)
     const {
         tasks,
         karaokeTask,
@@ -33,32 +35,39 @@ function App() {
                 <div className="eyebrow">
                     <span /> СПИСОК ДЕЛ И КАРАОКЕ
                 </div>
-                <h1>
-                    Все дела.
-                    <br />
-                    <span>И любимая песня.</span>
-                </h1>
-                <p className="intro">
-                    Планируйте день, отмечайте сделанное и пойте в караоке.
-                    <br className="desktop-break" /> Включите «Втюрилась» и подпевайте по строкам.
-                </p>
+                <h1>Дела в своём ритме</h1>
+                <p className="intro">Планируйте день, включайте караоке и подпевайте.</p>
                 <section className="task-card" aria-label="Список задач">
                     <div className="card-heading">
                         <div>
                             <h2>
                                 Мои задачи <span>{tasks.length}</span>
                             </h2>
-                            <p>Добавьте планы на день или сделайте паузу на песню.</p>
+                            <p>
+                                {tasks.length - completed} в работе · {completed} выполнено
+                            </p>
                         </div>
-                        <span className="heading-icon">
-                            <ListTodo size={22} />
-                        </span>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            className="karaoke-toggle"
+                            aria-expanded={karaokeOpen}
+                            aria-controls="karaoke-panel"
+                            onClick={() => setKaraokeOpen((open) => !open)}
+                        >
+                            <Music2 size={17} />
+                            Караоке
+                            <ChevronDown size={15} className={karaokeOpen ? 'is-open' : ''} />
+                        </Button>
                     </div>
 
-                    <KaraokePlayer />
+                    <div id="karaoke-panel" hidden={!karaokeOpen}>
+                        <KaraokePlayer />
+                    </div>
                     <form onSubmit={submitTask} className="add-form">
                         <Input
                             ref={inputRef}
+                            aria-describedby="task-input-hint"
                             aria-label="Новая задача"
                             placeholder="Что нужно сделать?"
                             value={title}
@@ -70,6 +79,18 @@ function App() {
                             <span>Добавить</span>
                         </Button>
                     </form>
+                    <div className="input-hint" id="task-input-hint">
+                        <span>Enter — добавить задачу</span>
+                        {title.length >= 240 && <span>{title.length} / 300</span>}
+                    </div>
+                    {tasks.length > 0 && (
+                        <progress
+                            className="task-progress"
+                            aria-label="Прогресс выполнения задач"
+                            value={completed}
+                            max={tasks.length}
+                        />
+                    )}
                     <div className="list-toolbar">
                         <Tabs className="task-filters" value={filter} onValueChange={changeFilter}>
                             <TabsList aria-label="Фильтр задач">
